@@ -1,0 +1,39 @@
+# Dependencies and build outputs
+node_modules
+.next
+out
+.swc
+
+# Git
+.git
+.gitignore
+
+# IDEs and OS files
+.idea
+.vscode
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+.DS_Store
+Thumbs.db
+
+# Environments (we will provide them via docker-compose)
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+
+# Documentation / local files
+STUDIO_ACCESS.md
+humanize.md
+README.md
+__tests__

@@ -1,0 +1,282 @@
+// Webnovel Platform - Prisma Schema
+// Complete schema for novel publishing platform
+
+generator client {
+  provider        = "prisma-client"
+  output          = "../app/generated/prisma"
+  previewFeatures = ["driverAdapters"]
+}
+
+datasource db {
+  provider = "mysql"
+}
+
+// User model with role-based access control
+model User {
+  id            String    @id @default(cuid())
+  name          String?
+  email         String    @unique
+  password      String
+  role          Role      @default(USER)
+  emailVerified DateTime?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  // Relations
+  novels          Novel[]
+  comments        Comment[]
+  commentLikes    CommentLike[]
+  ratings         Rating[]
+  favorites       Favorite[]
+  readingProgress ReadingProgress[]
+  following       Follow[]          @relation("UserFollowing") // follows I am doing
+  followers       Follow[]          @relation("UserFollowers") // follows directed at me
+  notifications   Notification[]
+  bookmarks       Bookmark[]
+
+  @@index([email])
+}
+
+// Novel model - main content entity
+model Novel {
+  id             String      @id @default(cuid())
+  title          String
+  description    String      @db.Text
+  coverUrl       String?
+  genres         String      @db.Text // Stored as comma-separated values
+  tags           String      @db.Text // Stored as comma-separated values
+  authorId       String
+  averageRating  Float?      // Calculated from ratings
+  totalRatings   Int         @default(0)
+  status         NovelStatus @default(ONGOING)
+  updateSchedule String?     @db.Text
+  totalChapters  Int?
+  featured       Boolean     @default(false)
+  views          Int         @default(0)
+  createdAt      DateTime    @default(now())
+  updatedAt      DateTime    @updatedAt
+
+  // Relations
+  author          User              @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  chapters        Chapter[]
+  ratings         Rating[]
+  favorites       Favorite[]
+  readingProgress ReadingProgress[]
+  bookmarks       Bookmark[]
+
+  @@index([authorId])
+  @@index([title])
+  @@index([status])
+  @@index([views])
+}
+
+// Chapter model - novel content
+model Chapter {
+  id          String    @id @default(cuid())
+  novelId     String
+  title       String
+  order       Int
+  content     String    @db.LongText
+  isPublished Boolean   @default(false)
+  publishedAt DateTime?
+  wordCount   Int       @default(0)
+  views       Int       @default(0)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  // Relations
+  novel           Novel             @relation(fields: [novelId], references: [id], onDelete: Cascade)
+  comments        Comment[]
+  readingProgress ReadingProgress[]
+  bookmarks       Bookmark[]
+
+  @@unique([novelId, order])
+  @@index([novelId])
+  @@index([isPublished])
+}
+
+// Comment model - user feedback on chapters with replies and likes
+model Comment {
+  id        String   @id @default(cuid())
+  content   String   @db.Text
+  userId    String
+  chapterId String
+  parentId  String?  // For nested replies
+  likes     Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  user    User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  chapter Chapter     @relation(fields: [chapterId], references: [id], onDelete: Cascade)
+  parent  Comment?    @relation("CommentReplies", fields: [parentId], references: [id], onDelete: Cascade)
+  replies Comment[]   @relation("CommentReplies")
+  likedBy CommentLike[]
+
+  @@index([chapterId])
+  @@index([userId])
+  @@index([parentId])
+}
+
+// CommentLike model - track who liked which comments
+model CommentLike {
+  id        String   @id @default(cuid())
+  userId    String
+  commentId String
+  createdAt DateTime @default(now())
+
+  // Relations
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  comment Comment @relation(fields: [commentId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, commentId])
+  @@index([commentId])
+  @@index([userId])
+}
+
+// Rating model - user ratings and reviews for novels
+model Rating {
+  id        String   @id @default(cuid())
+  rating    Int      // 1-5 stars
+  review    String?  @db.Text
+  userId    String
+  novelId   String
+  helpful   Int      @default(0) // Helpful votes
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  novel Novel @relation(fields: [novelId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, novelId]) // One rating per user per novel
+  @@index([novelId])
+  @@index([userId])
+  @@index([rating])
+}
+
+// Favorite model - many-to-many relationship between users and novels
+model Favorite {
+  id        String   @id @default(cuid())
+  userId    String
+  novelId   String
+  createdAt DateTime @default(now())
+
+  // Relations
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  novel Novel @relation(fields: [novelId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, novelId])
+  @@index([userId])
+  @@index([novelId])
+}
+
+// ReadingProgress model - track user reading progress
+model ReadingProgress {
+  id         String   @id @default(cuid())
+  userId     String
+  novelId    String
+  chapterId  String
+  progress   Int      @default(0) // Scroll percentage 0-100
+  lastReadAt DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  // Relations
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  novel   Novel   @relation(fields: [novelId], references: [id], onDelete: Cascade)
+  chapter Chapter @relation(fields: [chapterId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, novelId])
+  @@index([userId])
+  @@index([novelId])
+}
+
+// Follow model - user follows author
+model Follow {
+  id          String   @id @default(cuid())
+  followerId  String   // the user who follows
+  followingId String   // the author being followed
+  createdAt   DateTime @default(now())
+
+  follower  User @relation("UserFollowing", fields: [followerId], references: [id], onDelete: Cascade)
+  following User @relation("UserFollowers", fields: [followingId], references: [id], onDelete: Cascade)
+
+  @@unique([followerId, followingId])
+  @@index([followerId])
+  @@index([followingId])
+}
+
+// Notification model - in-app notifications
+model Notification {
+  id        String           @id @default(cuid())
+  userId    String
+  type      NotificationType
+  title     String
+  message   String           @db.Text
+  link      String?
+  isRead    Boolean          @default(false)
+  createdAt DateTime         @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([isRead])
+  @@index([createdAt])
+}
+
+// Bookmark model - bookmark specific chapters
+model Bookmark {
+  id        String   @id @default(cuid())
+  userId    String
+  chapterId String
+  novelId   String
+  note      String?
+  createdAt DateTime @default(now())
+
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  chapter Chapter @relation(fields: [chapterId], references: [id], onDelete: Cascade)
+  novel   Novel   @relation(fields: [novelId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, chapterId])
+  @@index([userId])
+  @@index([novelId])
+}
+
+// Role enum for user access control
+enum Role {
+  USER
+  AUTHOR
+  ADMIN
+}
+
+// Novel status enum for publication tracking
+enum NovelStatus {
+  ONGOING
+  COMPLETED
+  HIATUS
+  DROPPED
+}
+
+// Notification type enum
+enum NotificationType {
+  NEW_CHAPTER    // novel yang difavorite/follow author update chapter baru
+  NEW_FOLLOWER   // ada yang follow kamu
+  COMMENT_REPLY  // balasan pada comment kamu
+}
+
+// Site settings - key-value store for platform configuration
+model SiteSetting {
+  key       String   @id
+  value     String   @db.Text
+  updatedAt DateTime @updatedAt
+}
+
+// Announcements for homepage
+model Announcement {
+  id        String   @id @default(cuid())
+  title     String
+  content   String?  @db.Text
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
