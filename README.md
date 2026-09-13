@@ -1,4 +1,4 @@
-# NovelHub - Complete Webnovel Platform
+# Aksaraya - Complete Webnovel Platform
 
 A modern, full-featured webnovel publishing platform built with Next.js 16, TypeScript, TailwindCSS, Prisma, and Auth.js. Allows users to read novels, authors to publish their work, and admins to moderate content.
 
