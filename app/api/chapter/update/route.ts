@@ -21,7 +21,7 @@ export async function PUT(req: NextRequest) {
         // Check if chapter exists
         const existingChapter = await prisma.chapter.findUnique({
             where: { id: validatedData.id },
-            include: { novel: { select: { id: true, authorId: true, title: true } } },
+            include: { novel: { select: { id: true, translatorId: true, title: true } } },
         });
 
         if (!existingChapter) {
@@ -30,7 +30,7 @@ export async function PUT(req: NextRequest) {
 
         // Check ownership
         if (
-            existingChapter.novel.authorId !== session.user.id &&
+            existingChapter.novel.translatorId !== session.user.id &&
             session.user.role !== "ADMIN"
         ) {
             return NextResponse.json(
@@ -74,7 +74,7 @@ export async function PUT(req: NextRequest) {
                     select: { userId: true },
                 }),
                 prisma.follow.findMany({
-                    where: { followingId: novel.authorId },
+                    where: { followingId: novel.translatorId },
                     select: { followerId: true },
                 }),
             ]);
@@ -84,7 +84,7 @@ export async function PUT(req: NextRequest) {
                     ...favoriters.map((f) => f.userId),
                     ...followers.map((f) => f.followerId),
                 ]),
-            ].filter((uid) => uid !== novel.authorId);
+            ].filter((uid) => uid !== novel.translatorId);
 
             if (notifyUserIds.length > 0) {
                 await prisma.notification.createMany({

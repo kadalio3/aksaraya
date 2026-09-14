@@ -1,32 +1,18 @@
-import { auth } from "@/lib/auth";
-import { redirect, notFound } from "next/navigation";
-import { StudioLayout } from "@/components/studio/studio-layout";
 import { ContentTabs } from "@/components/studio/content-tabs";
 import prisma from "@/prisma";
-
-const STUDIO_ACCESS_TOKEN = process.env.ADMIN_STUDIO_TOKEN || "nhub-studio-2024-secure";
 
 export default async function StudioContentPage({
     searchParams,
 }: {
     searchParams: Promise<{ verify?: string }>;
 }) {
-    const session = await auth();
     const params = await searchParams;
-
-    if (!session?.user || session.user.role !== "ADMIN") {
-        redirect("/login");
-    }
-
-    if (params.verify !== STUDIO_ACCESS_TOKEN) {
-        notFound();
-    }
 
     // Fetch novels and chapters
     const [novels, chapters] = await Promise.all([
         prisma.novel.findMany({
             include: {
-                author: {
+                translator: {
                     select: {
                         name: true,
                         email: true,
@@ -56,7 +42,7 @@ export default async function StudioContentPage({
     ]);
 
     return (
-        <StudioLayout studioToken={params.verify} user={session.user}>
+        <>
             <div className="mb-8">
                 <h1 className="text-4xl font-bold mb-2">Content Management</h1>
                 <p className="text-muted">Manage novels and chapters across the platform</p>
@@ -86,7 +72,7 @@ export default async function StudioContentPage({
             </div>
 
             {/* Tabbed Content */}
-            <ContentTabs novels={novels} chapters={chapters} studioToken={params.verify} />
-        </StudioLayout>
+            <ContentTabs novels={novels} chapters={chapters} studioToken={params.verify!} />
+        </>
     );
 }

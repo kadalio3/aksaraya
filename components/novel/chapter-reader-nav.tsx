@@ -171,8 +171,8 @@ export function ChapterReaderNav({
                     />
                 </div>
 
-                <div className="max-w-4xl mx-auto px-4">
-                    <div className="flex items-center justify-between h-14">
+                <div className="max-w-6xl mx-auto px-3 sm:px-4">
+                    <div className="flex items-center justify-between h-12 sm:h-14">
                         {/* Left: Back + Novel Title */}
                         <div className="flex items-center gap-3 min-w-0 flex-1">
                             <Link
@@ -324,7 +324,7 @@ export function ChapterReaderNav({
             </div>
 
             {/* Spacer for fixed header */}
-            <div className="h-[60px]" />
+            <div className="h-[52px] sm:h-[60px]" />
 
             {/* Keyboard shortcut hint */}
             <div className="fixed bottom-4 left-1/2 -translate-x-1/2 bg-black/80 text-white text-xs px-4 py-2 rounded-full opacity-0 animate-fade-hint pointer-events-none hidden md:block">

@@ -42,7 +42,7 @@ export async function GET(req: NextRequest) {
                 skip,
                 take: validatedParams.limit,
                 include: {
-                    author: {
+                    translator: {
                         select: {
                             id: true,
                             name: true,

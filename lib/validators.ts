@@ -23,6 +23,7 @@ export const createNovelSchema = z.object({
     status: z.enum(["ONGOING", "COMPLETED", "HIATUS", "DROPPED"]).optional().default("ONGOING"),
     updateSchedule: z.string().max(500).optional(),
     totalChapters: z.number().int().positive().optional(),
+    authorId: z.string().optional(), // Original author ID
 });
 
 export const updateNovelSchema = z.object({
@@ -35,6 +36,7 @@ export const updateNovelSchema = z.object({
     status: z.enum(["ONGOING", "COMPLETED", "HIATUS", "DROPPED"]).optional(),
     updateSchedule: z.string().max(500).optional(),
     totalChapters: z.number().int().positive().optional(),
+    authorId: z.string().optional(), // Original author ID
 });
 
 // Chapter Schemas

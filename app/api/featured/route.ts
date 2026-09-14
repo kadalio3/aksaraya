@@ -18,7 +18,7 @@ export async function GET(request: Request) {
             title: true,
             coverUrl: true,
             featured: true,
-            author: { select: { name: true } },
+            translator: { select: { name: true } },
             _count: { select: { chapters: true, favorites: true } },
         },
         orderBy: [{ featured: "desc" }, { updatedAt: "desc" }],

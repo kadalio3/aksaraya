@@ -27,7 +27,7 @@ export default async function DashboardPage() {
         include: {
             novel: {
                 include: {
-                    author: {
+                    translator: {
                         select: {
                             name: true,
                             email: true,
@@ -57,7 +57,7 @@ export default async function DashboardPage() {
                     title: true,
                     coverUrl: true,
                     status: true,
-                    author: {
+                    translator: {
                         select: { name: true },
                     },
                     _count: {
@@ -133,7 +133,7 @@ export default async function DashboardPage() {
                                         </p>
                                         <div className="flex items-center justify-between mt-2">
                                             <p className="text-xs text-muted">
-                                                {fav.novel.author.name || "Unknown"}
+                                                {fav.novel.translator.name || "Unknown"}
                                             </p>
                                             <p className="text-xs text-muted">{fav.novel._count.chapters} ch</p>
                                         </div>
@@ -195,7 +195,7 @@ export default async function DashboardPage() {
                     <Link href="/novel">
                         <Button variant="primary">Jelajahi Novel</Button>
                     </Link>
-                    {(session.user.role === "AUTHOR" || session.user.role === "ADMIN") && (
+                    {(session.user.role === "TRANSLATOR" || session.user.role === "ADMIN") && (
                         <Link href="/dashboard/author">
                             <Button variant="secondary">Novel Saya</Button>
                         </Link>

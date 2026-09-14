@@ -17,7 +17,11 @@ interface NovelCardProps {
         totalChapters?: number | null;
         averageRating?: number | null;
         totalRatings?: number;
-        author: {
+        author?: {
+            id?: string;
+            name: string | null;
+        } | null;
+        translator: {
             id: string;
             name: string | null;
             email: string;
@@ -74,7 +78,7 @@ export function NovelCard({ novel }: NovelCardProps) {
                         {novel.title}
                     </h3>
 
-                    <p className="text-[11px] text-muted">{novel.author.name || "Anonymous"}</p>
+                    <p className="text-[11px] text-muted">{novel.author?.name || "Unknown Author"}</p>
 
                     {novel.genres && novel.genres.split(',').filter(Boolean).length > 0 && (
                         <div className="flex flex-wrap gap-1">

@@ -17,7 +17,7 @@ export async function GET(
         const novel = await prisma.novel.findUnique({
             where: { id },
             include: {
-                author: {
+                translator: {
                     select: {
                         id: true,
                         name: true,
@@ -30,8 +30,8 @@ export async function GET(
             return NextResponse.json({ error: "Novel not found" }, { status: 404 });
         }
 
-        // Check if user is the author
-        if (novel.authorId !== session.user.id && session.user.role !== "ADMIN") {
+        // Check if user is the translator
+        if (novel.translatorId !== session.user.id && session.user.role !== "ADMIN") {
             return NextResponse.json({ error: "Forbidden" }, { status: 403 });
         }
 

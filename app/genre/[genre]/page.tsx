@@ -33,7 +33,7 @@ export default async function GenrePage({
             status: true,
             updateSchedule: true,
             totalChapters: true,
-            author: {
+            translator: {
                 select: {
                     id: true,
                     name: true,

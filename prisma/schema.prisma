@@ -1,5 +1,5 @@
-// Webnovel Platform - Prisma Schema
-// Complete schema for novel publishing platform
+// Webnovel Translation Platform - Prisma Schema
+// Complete schema for novel translation platform (ID translations)
 
 generator client {
   provider        = "prisma-client"
@@ -11,7 +11,7 @@ datasource db {
   provider = "mysql"
 }
 
-// User model with role-based access control
+// User model with role-based access control (USER, TRANSLATOR, ADMIN)
 model User {
   id            String    @id @default(cuid())
   name          String?
@@ -37,7 +37,22 @@ model User {
   @@index([email])
 }
 
-// Novel model - main content entity
+// Author model - original author of the novel (not a platform user)
+model Author {
+  id               String   @id @default(cuid())
+  name             String
+  originalLanguage String?  // "Chinese", "Korean", "Japanese", "English", etc.
+  description      String?  @db.Text
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  // Relations
+  novels Novel[]
+
+  @@index([name])
+}
+
+// Novel model - main content entity (translated novel)
 model Novel {
   id             String      @id @default(cuid())
   title          String
@@ -45,7 +60,8 @@ model Novel {
   coverUrl       String?
   genres         String      @db.Text // Stored as comma-separated values
   tags           String      @db.Text // Stored as comma-separated values
-  authorId       String
+  translatorId   String                // User who translates the novel
+  authorId       String?               // Original author of the novel
   averageRating  Float?      // Calculated from ratings
   totalRatings   Int         @default(0)
   status         NovelStatus @default(ONGOING)
@@ -57,13 +73,15 @@ model Novel {
   updatedAt      DateTime    @updatedAt
 
   // Relations
-  author          User              @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  translator      User              @relation(fields: [translatorId], references: [id], onDelete: Cascade)
+  author          Author?           @relation(fields: [authorId], references: [id], onDelete: SetNull)
   chapters        Chapter[]
   ratings         Rating[]
   favorites       Favorite[]
   readingProgress ReadingProgress[]
   bookmarks       Bookmark[]
 
+  @@index([translatorId])
   @@index([authorId])
   @@index([title])
   @@index([status])
@@ -191,11 +209,11 @@ model ReadingProgress {
   @@index([novelId])
 }
 
-// Follow model - user follows author
+// Follow model - user follows translator
 model Follow {
   id          String   @id @default(cuid())
   followerId  String   // the user who follows
-  followingId String   // the author being followed
+  followingId String   // the translator being followed
   createdAt   DateTime @default(now())
 
   follower  User @relation("UserFollowing", fields: [followerId], references: [id], onDelete: Cascade)
@@ -245,7 +263,7 @@ model Bookmark {
 // Role enum for user access control
 enum Role {
   USER
-  AUTHOR
+  TRANSLATOR
   ADMIN
 }
 
@@ -259,7 +277,7 @@ enum NovelStatus {
 
 // Notification type enum
 enum NotificationType {
-  NEW_CHAPTER    // novel yang difavorite/follow author update chapter baru
+  NEW_CHAPTER    // novel yang difavorite/follow penerjemah update chapter baru
   NEW_FOLLOWER   // ada yang follow kamu
   COMMENT_REPLY  // balasan pada comment kamu
 }
@@ -279,4 +297,26 @@ model Announcement {
   active    Boolean  @default(true)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+}
+
+// Page view tracking for visitor analytics
+model PageView {
+  id        String   @id @default(cuid())
+  path      String            // Page visited
+  ip        String?           // Hashed IP for privacy
+  country   String?           // Country from IP
+  city      String?           // City (optional)
+  device    String?           // "Desktop", "Mobile", "Tablet"
+  browser   String?           // "Chrome", "Firefox", "Safari", etc.
+  os        String?           // "Windows", "macOS", "Android", "iOS"
+  userAgent String?  @db.Text // Raw user-agent
+  referer   String?           // Referrer URL
+  userId    String?           // User ID if logged in
+  sessionId String?           // Session fingerprint for unique visitors
+  createdAt DateTime @default(now())
+
+  @@index([createdAt])
+  @@index([path])
+  @@index([sessionId])
+  @@index([country])
 }

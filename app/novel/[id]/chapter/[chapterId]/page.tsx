@@ -10,7 +10,7 @@ import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { formatDate } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-import { BookOpen, Clock, AlignLeft } from "lucide-react";
+import { Clock, AlignLeft } from "lucide-react";
 
 function estimateReadingTime(content: string): number {
     const wordsPerMinute = 200;
@@ -35,7 +35,7 @@ export default async function ChapterReadingPage({
         include: {
             novel: {
                 include: {
-                    author: {
+                    translator: {
                         select: {
                             id: true,
                             name: true,
@@ -52,7 +52,7 @@ export default async function ChapterReadingPage({
 
     // Check if user has permission to view unpublished chapter
     if (!chapter.isPublished) {
-        if (!session?.user || (session.user.id !== chapter.novel.authorId && session.user.role !== "ADMIN")) {
+        if (!session?.user || (session.user.id !== chapter.novel.translatorId && session.user.role !== "ADMIN")) {
             redirect(`/novel/${id}`);
         }
     }
@@ -61,7 +61,7 @@ export default async function ChapterReadingPage({
     const allChapters = await prisma.chapter.findMany({
         where: {
             novelId: id,
-            isPublished: session?.user?.id === chapter.novel.authorId ? undefined : true,
+            isPublished: session?.user?.id === chapter.novel.translatorId ? undefined : true,
         },
         select: {
             id: true,
@@ -137,21 +137,17 @@ export default async function ChapterReadingPage({
             />
 
             {/* Content */}
-            <Container size="md" className="py-8">
+            <Container size="lg" className="py-6 sm:py-8">
                 <article className="reading-content">
-                    {/* Chapter Header */}
-                    <div className="mb-8 pb-6 border-b border-border">
-                        <p className="text-sm text-muted mb-2">Chapter {chapter.order}</p>
-                        <h1 className="text-2xl sm:text-3xl font-bold font-display text-fg mb-4">
+                    <div className="mb-6 sm:mb-8 pb-4 sm:pb-6 border-b border-border">
+                        <p className="text-xs sm:text-sm text-muted mb-1.5 sm:mb-2">Chapter {chapter.order}</p>
+                        <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold font-display text-fg mb-3 sm:mb-4">
                             {chapter.title}
                         </h1>
 
-                        <div className="flex flex-wrap items-center justify-between gap-3">
-                            <div className="flex flex-wrap items-center gap-4 text-sm text-muted">
-                                <span className="flex items-center gap-1.5">
-                                    <BookOpen size={13} />
-                                    {chapter.novel.author.name}
-                                </span>
+                        <div className="flex flex-wrap items-center justify-between gap-2 sm:gap-3">
+                            <div className="flex flex-wrap items-center gap-2.5 sm:gap-4 text-xs sm:text-sm text-muted">
+
                                 <span className="flex items-center gap-1.5">
                                     <Clock size={13} />
                                     {readingTime} mnt baca
@@ -189,25 +185,31 @@ export default async function ChapterReadingPage({
 
             {/* Bottom Navigation */}
             <div className="border-t border-border bg-bg">
-                <Container size="md" className="py-6">
+                <Container size="lg" className="py-4 sm:py-6">
                     <div className="flex items-center justify-between">
                         {prevChapter ? (
                             <Link href={`/novel/${id}/chapter/${prevChapter.id}`}>
-                                <Button variant="outline">← Chapter Sebelumnya</Button>
+                                <Button variant="outline">
+                                    <span className="hidden sm:inline">← Chapter Sebelumnya</span>
+                                    <span className="sm:hidden">← Sebelumnya</span>
+                                </Button>
                             </Link>
                         ) : (
                             <div />
                         )}
                         <Link href={`/novel/${id}`}>
-                            <Button variant="ghost" className="p-2" title="Kembali ke Novel">
-                                <svg className="w-10 h-10 stroke-accent" fill="none" viewBox="0 0 24 24">
+                            <Button variant="ghost" className="p-1.5 sm:p-2" title="Kembali ke Novel">
+                                <svg className="w-7 h-7 sm:w-10 sm:h-10 stroke-accent" fill="none" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
                                 </svg>
                             </Button>
                         </Link>
                         {nextChapter ? (
                             <Link href={`/novel/${id}/chapter/${nextChapter.id}`}>
-                                <Button variant="primary">Chapter Berikutnya →</Button>
+                                <Button variant="primary">
+                                    <span className="hidden sm:inline">Chapter Berikutnya →</span>
+                                    <span className="sm:hidden">Berikutnya →</span>
+                                </Button>
                             </Link>
                         ) : (
                             <Link href={`/novel/${id}`}>
@@ -220,7 +222,7 @@ export default async function ChapterReadingPage({
 
             {/* Comments Section */}
             <div className="border-t border-border bg-bg">
-                <Container size="md" className="py-10">
+                <Container size="lg" className="py-6 sm:py-10">
                     <CommentSection
                         chapterId={chapter.id}
                         currentUserId={session?.user?.id}

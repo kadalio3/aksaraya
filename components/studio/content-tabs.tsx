@@ -9,7 +9,7 @@ interface Novel {
     id: string;
     title: string;
     description: string;
-    author: {
+    translator: {
         name: string | null;
         email: string;
     };
@@ -76,7 +76,7 @@ export function ContentTabs({ novels, chapters, studioToken }: ContentTabsProps)
                                 <thead>
                                     <tr className="border-b">
                                         <th className="text-left py-3 px-4 font-semibold">Title</th>
-                                        <th className="text-left py-3 px-4 font-semibold">Author</th>
+                                        <th className="text-left py-3 px-4 font-semibold">Penerjemah</th>
                                         <th className="text-center py-3 px-4 font-semibold">Chapters</th>
                                         <th className="text-left py-3 px-4 font-semibold">Created</th>
                                         <th className="text-right py-3 px-4 font-semibold">Actions</th>
@@ -94,7 +94,7 @@ export function ContentTabs({ novels, chapters, studioToken }: ContentTabsProps)
                                                 </Link>
                                             </td>
                                             <td className="py-3 px-4 text-sm text-muted">
-                                                {novel.author.name || novel.author.email}
+                                                {novel.translator.name || novel.translator.email}
                                             </td>
                                             <td className="py-3 px-4 text-center">
                                                 <span className="px-2 py-1 bg-accent/10 text-blue-800 rounded text-sm font-medium">

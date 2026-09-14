@@ -49,7 +49,7 @@ export function CommentItem({
     const { showToast } = useToast();
 
     const isOwner = currentUserId === comment.user.id;
-    const isAuthor = comment.user.role === "AUTHOR";
+    const isTranslator = comment.user.role === "TRANSLATOR";
 
     const handleLike = async () => {
         try {
@@ -101,7 +101,7 @@ export function CommentItem({
         <div className={`${isReply ? "ml-12" : ""}`}>
             <div className="flex gap-4">
                 {/* Avatar */}
-                <div className={`flex-shrink-0 w-10 h-10 rounded-full bg-accent/10 text-accent flex items-center justify-center text-white font-bold ${isAuthor ? "ring-2 ring-accent" : ""}`}>
+                <div className={`flex-shrink-0 w-10 h-10 rounded-full bg-accent/10 text-accent flex items-center justify-center text-white font-bold ${isTranslator ? "ring-2 ring-accent" : ""}`}>
                     {comment.user.name?.[0]?.toUpperCase() || comment.user.email[0].toUpperCase()}
                 </div>
 
@@ -112,9 +112,9 @@ export function CommentItem({
                         <span className="font-semibold text-fg">
                             {comment.user.name || "Anonymous"}
                         </span>
-                        {isAuthor && (
+                        {isTranslator && (
                             <span className="px-2 py-0.5 text-xs bg-accent text-accent-fg rounded-full font-medium">
-                                Author
+                                Penerjemah
                             </span>
                         )}
                         <span className="text-sm text-muted">

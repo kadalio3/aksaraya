@@ -1,27 +1,7 @@
-import { auth } from "@/lib/auth";
-import { redirect, notFound } from "next/navigation";
-import { StudioLayout } from "@/components/studio/studio-layout";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import prisma from "@/prisma";
 
-const STUDIO_ACCESS_TOKEN = process.env.ADMIN_STUDIO_TOKEN || "nhub-studio-2024-secure";
-
-export default async function StudioTagsPage({
-    searchParams,
-}: {
-    searchParams: Promise<{ verify?: string }>;
-}) {
-    const session = await auth();
-    const params = await searchParams;
-
-    if (!session?.user || session.user.role !== "ADMIN") {
-        redirect("/login");
-    }
-
-    if (params.verify !== STUDIO_ACCESS_TOKEN) {
-        notFound();
-    }
-
+export default async function StudioTagsPage() {
     // Get all novels with tags
     const novels = await prisma.novel.findMany({
         select: {
@@ -52,7 +32,7 @@ export default async function StudioTagsPage({
     const totalUses = tagStats.reduce((sum, tag) => sum + tag.count, 0);
 
     return (
-        <StudioLayout studioToken={params.verify} user={session.user}>
+        <>
             <div className="mb-8">
                 <h1 className="text-4xl font-bold mb-2">Tag Management</h1>
                 <p className="text-muted">Manage and moderate novel tags used across the platform</p>
@@ -156,6 +136,6 @@ export default async function StudioTagsPage({
                     )}
                 </CardContent>
             </Card>
-        </StudioLayout>
+        </>
     );
 }

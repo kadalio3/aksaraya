@@ -30,13 +30,14 @@ export default async function NovelDetailPage({
     const novel = await prisma.novel.findUnique({
         where: { id },
         include: {
-            author: {
+            translator: {
                 select: {
                     id: true,
                     name: true,
                     email: true,
                 },
             },
+            author: true,
             chapters: {
                 where: session?.user?.id
                     ? undefined
@@ -58,7 +59,7 @@ export default async function NovelDetailPage({
 
     const genres = novel.genres.split(",").map((g) => g.trim()).filter(Boolean);
     const tags = novel.tags.split(",").map((t) => t.trim()).filter(Boolean);
-    const isAuthor = session?.user?.id === novel.authorId;
+    const isTranslator = session?.user?.id === novel.translatorId;
 
     const isFavorited = session?.user
         ? await prisma.favorite.findUnique({
@@ -130,14 +131,30 @@ export default async function NovelDetailPage({
                                 )}
                             </div>
 
-                            {/* Author */}
-                            <div className="text-sm mb-4">
-                                <Link
-                                    href={`/author/${novel.author.id}`}
-                                    className="font-medium text-accent hover:opacity-80 transition-[opacity] duration-300"
-                                >
-                                    {novel.author.name || novel.author.email}
-                                </Link>
+                            {/* Author & Translator */}
+                            <div className="text-sm mb-4 space-y-1">
+                                <p className="text-muted">
+                                    Author:{" "}
+                                    {novel.author ? (
+                                        <>
+                                            <span className="font-medium text-fg">{novel.author.name}</span>
+                                            {novel.author.originalLanguage && (
+                                                <span className="text-xs ml-1">({novel.author.originalLanguage})</span>
+                                            )}
+                                        </>
+                                    ) : (
+                                        <span className="text-muted italic">Belum diisi</span>
+                                    )}
+                                </p>
+                                <p className="text-muted">
+                                    Penerjemah:{" "}
+                                    <Link
+                                        href={`/author/${novel.translator.id}`}
+                                        className="font-medium text-accent hover:opacity-80 transition-[opacity] duration-300"
+                                    >
+                                        {novel.translator.name || novel.translator.email}
+                                    </Link>
+                                </p>
                             </div>
 
                             {/* Genres */}
@@ -174,7 +191,7 @@ export default async function NovelDetailPage({
                                         <Button variant="primary">Start Reading</Button>
                                     </Link>
                                 )}
-                                {isAuthor ? (
+                                {isTranslator ? (
                                     <>
                                         <Link href={`/novel/${novel.id}/edit`}>
                                             <Button variant="outline">Edit Novel</Button>
@@ -249,7 +266,7 @@ export default async function NovelDetailPage({
                             <ChapterList
                                 chapters={novel.chapters}
                                 novelId={novel.id}
-                                isAuthor={isAuthor}
+                                isAuthor={isTranslator}
                             />
 
                             <RatingSection

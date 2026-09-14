@@ -12,7 +12,7 @@ interface ReadingItem {
         title: string;
         coverUrl: string | null;
         status?: string | null;
-        author: {
+        translator: {
             name: string | null;
         };
         _count: {

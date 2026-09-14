@@ -6,7 +6,7 @@ import type { NextRequest } from "next/server";
 export async function proxy(request: NextRequest) {
     const { pathname } = request.nextUrl;
 
-    // CRITICAL: Studio routes require authentication - redirect immediately if no session
+    // CRITICAL: Studio routes require authentication + token verification
     if (pathname.startsWith("/studio")) {
         const sessionToken = request.cookies.get("authjs.session-token") ||
             request.cookies.get("__Secure-authjs.session-token");
@@ -17,8 +17,21 @@ export async function proxy(request: NextRequest) {
             return NextResponse.redirect(loginUrl);
         }
 
-        // Additional role check will be done in the page itself
-        // since we can't access database in edge runtime
+        // Verify studio access token
+        const STUDIO_ACCESS_TOKEN = process.env.ADMIN_STUDIO_TOKEN || "nhub-studio-2024-secure";
+        const verifyToken = request.nextUrl.searchParams.get("verify") || "";
+
+        if (verifyToken !== STUDIO_ACCESS_TOKEN) {
+            return new NextResponse("Not Found", { status: 404 });
+        }
+
+        // Pass the verified token via header so layout can read it
+        const requestHeaders = new Headers(request.headers);
+        requestHeaders.set("x-studio-token", verifyToken);
+
+        return NextResponse.next({
+            request: { headers: requestHeaders },
+        });
     }
 
     // Public paths that don't require authentication

@@ -164,7 +164,7 @@ export function UsersTable({ users, onRefresh }: UsersTableProps) {
                 >
                     <option value="ALL">All Roles</option>
                     <option value="USER">USER</option>
-                    <option value="AUTHOR">AUTHOR</option>
+                    <option value="TRANSLATOR">TRANSLATOR</option>
                     <option value="ADMIN">ADMIN</option>
                 </select>
 
@@ -234,7 +234,7 @@ export function UsersTable({ users, onRefresh }: UsersTableProps) {
                                         <span
                                             className={`px-2 py-1 text-xs rounded-full font-medium ${user.role === "ADMIN"
                                                 ? "bg-accent/10 text-fg"
-                                                : user.role === "AUTHOR"
+                                                : user.role === "TRANSLATOR"
                                                     ? "bg-accent/10 text-fg"
                                                     : "bg-bg text-fg"
                                                 }`}

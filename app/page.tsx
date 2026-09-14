@@ -12,7 +12,7 @@ import { HorizontalScroll } from "@/components/ui/horizontal-scroll";
 import { RecentUpdatesList } from "@/components/home/recent-updates-list";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { Search, Wand2, Heart, Swords, ScanSearch, Rocket, Skull, TrendingUp, Clock, Sparkles, Star, BookOpen, Users, PenTool, ArrowRight } from "lucide-react";
+import { Search, TrendingUp, Clock, Sparkles, Star, BookOpen, Users, ArrowRight } from "lucide-react";
 
 export default async function HomePage() {
   const session = await auth();
@@ -24,7 +24,8 @@ export default async function HomePage() {
     id: true, title: true, description: true, genres: true, coverUrl: true,
     status: true, updateSchedule: true, totalChapters: true,
     averageRating: true, totalRatings: true,
-    author: { select: { id: true, name: true, email: true } },
+    author: { select: { id: true, name: true } },
+    translator: { select: { id: true, name: true, email: true } },
     _count: { select: { chapters: true, favorites: true } },
   } as const;
 
@@ -47,10 +48,10 @@ export default async function HomePage() {
     select: novelSelect,
   });
 
-  const [totalNovels, totalChapters, totalAuthors] = await Promise.all([
+  const [totalNovels, totalChapters, totalTranslators] = await Promise.all([
     prisma.novel.count(),
     prisma.chapter.count(),
-    prisma.user.count({ where: { role: "AUTHOR" } }),
+    prisma.user.count({ where: { role: "TRANSLATOR" } }),
   ]);
 
   const latestChapters = await prisma.chapter.findMany({
@@ -79,14 +80,7 @@ export default async function HomePage() {
     take: 10,
   });
 
-  const genres = [
-    { name: "Fantasy", icon: Wand2, accent: "text-purple-600 dark:text-purple-400", bg: "bg-purple-100 dark:bg-purple-900/30" },
-    { name: "Romance", icon: Heart, accent: "text-rose-600 dark:text-rose-400", bg: "bg-rose-100 dark:bg-rose-900/30" },
-    { name: "Action", icon: Swords, accent: "text-orange-600 dark:text-orange-400", bg: "bg-orange-100 dark:bg-orange-900/30" },
-    { name: "Mystery", icon: ScanSearch, accent: "text-accent dark:text-blue-400", bg: "bg-blue-100 dark:bg-blue-900/30" },
-    { name: "Sci-Fi", icon: Rocket, accent: "text-cyan-600 dark:text-cyan-400", bg: "bg-cyan-100 dark:bg-cyan-900/30" },
-    { name: "Horror", icon: Skull, accent: "text-slate-600 dark:text-slate-400", bg: "bg-slate-100 dark:bg-slate-800/50" },
-  ];
+
 
   return (
     <div className="min-h-screen bg-bg">
@@ -102,7 +96,8 @@ export default async function HomePage() {
               coverUrl: n.coverUrl,
               averageRating: n.averageRating,
               totalRatings: n.totalRatings,
-              author: { name: n.author.name },
+              author: { name: n.author?.name || null },
+              translator: { name: n.translator.name },
             }))} />
             <div className="hidden lg:block">
               <AnnouncementPanel announcements={announcements.map(a => ({
@@ -122,26 +117,7 @@ export default async function HomePage() {
 
 
 
-        <section>
-          <h2 className="text-2xl font-bold font-display text-fg mb-6">Temukan Genre Favoritmu</h2>
-          <div className="grid grid-cols-3 sm:grid-cols-3 lg:grid-cols-6 gap-2 sm:gap-3">
-            {genres.map((genre) => {
-              const Icon = genre.icon;
-              return (
-                <Link
-                  key={genre.name}
-                  href={`/novel?genre=${genre.name}`}
-                  className={`group flex flex-col sm:flex-row items-center gap-1.5 sm:gap-3 px-2 py-2.5 sm:px-4 sm:py-3.5 rounded-xl border border-border bg-surface hover:-translate-y-0.5 transition-[transform,border-color] duration-300 hover:border-accent`}
-                >
-                  <div className={`w-8 h-8 sm:w-9 sm:h-9 rounded-lg ${genre.bg} flex items-center justify-center shrink-0`}>
-                    <Icon size={16} className={genre.accent} />
-                  </div>
-                  <span className="font-medium text-xs sm:text-sm text-fg">{genre.name}</span>
-                </Link>
-              );
-            })}
-          </div>
-        </section>
+
 
         {trendingNovels.length > 0 && (
           <section>
@@ -227,27 +203,7 @@ export default async function HomePage() {
           </div>
         </section>
 
-        <section className="relative rounded-2xl border border-border overflow-hidden">
-          <div className="absolute inset-0 bg-accent/5"></div>
-          <div className="relative px-5 py-8 sm:px-12 sm:py-14 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 sm:gap-6">
-            <div className="flex items-start gap-3 sm:gap-4">
-              <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-accent/15 flex items-center justify-center shrink-0">
-                <PenTool size={20} className="text-accent" />
-              </div>
-              <div>
-                <h2 className="text-lg sm:text-2xl font-bold font-display text-fg mb-1">Punya Cerita di Kepalamu?</h2>
-                <p className="text-sm sm:text-base text-muted max-w-md">
-                  Kami selalu terbuka untuk penulis baru. Tanpa proses seleksi, langsung tulis dan publikasikan.
-                </p>
-              </div>
-            </div>
-            <Link href="/register" className="w-full sm:w-auto">
-              <Button className="whitespace-nowrap w-full sm:w-auto">
-                Mulai Menulis <ArrowRight size={16} className="ml-2 inline" />
-              </Button>
-            </Link>
-          </div>
-        </section>
+
       </div>
       <Footer siteName={settings.site_name} />
     </div>

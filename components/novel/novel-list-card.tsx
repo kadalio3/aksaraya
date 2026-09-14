@@ -17,7 +17,11 @@ interface NovelListCardProps {
         totalChapters?: number | null;
         averageRating?: number | null;
         totalRatings?: number;
-        author: {
+        author?: {
+            id?: string;
+            name: string | null;
+        } | null;
+        translator: {
             id: string;
             name: string | null;
             email: string;

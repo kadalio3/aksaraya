@@ -10,6 +10,12 @@ import { CoverUploader } from "@/components/novel/cover-uploader";
 import Link from "next/link";
 import { use } from "react";
 
+interface Author {
+    id: string;
+    name: string;
+    originalLanguage: string | null;
+}
+
 interface PageProps {
     params: Promise<{ id: string }>;
 }
@@ -22,17 +28,26 @@ export default function EditNovelPage({ params }: PageProps) {
     const [error, setError] = useState("");
     const [novel, setNovel] = useState<any>(null);
     const [coverUrl, setCoverUrl] = useState("");
+    const [authors, setAuthors] = useState<Author[]>([]);
+    const [selectedAuthorId, setSelectedAuthorId] = useState("");
+    const [showNewAuthor, setShowNewAuthor] = useState(false);
+    const [newAuthorName, setNewAuthorName] = useState("");
+    const [newAuthorLang, setNewAuthorLang] = useState("");
 
     useEffect(() => {
-        fetch(`/api/novel/${id}`)
-            .then((res) => res.json())
-            .then((data) => {
-                setNovel(data);
-                setCoverUrl(data.coverUrl || "");
+        Promise.all([
+            fetch(`/api/novel/${id}`).then((res) => res.json()),
+            fetch("/api/author/list").then((res) => res.json()).catch(() => []),
+        ])
+            .then(([novelData, authorData]) => {
+                setNovel(novelData);
+                setCoverUrl(novelData.coverUrl || "");
+                setSelectedAuthorId(novelData.authorId || "");
+                if (Array.isArray(authorData)) setAuthors(authorData);
                 setLoading(false);
             })
             .catch(() => {
-                setError("Failed to load novel");
+                setError("Gagal memuat novel");
                 setLoading(false);
             });
     }, [id]);
@@ -43,6 +58,30 @@ export default function EditNovelPage({ params }: PageProps) {
         setError("");
 
         const formData = new FormData(e.currentTarget);
+
+        // Handle author: either existing or create new
+        let authorId = selectedAuthorId || undefined;
+
+        if (showNewAuthor && newAuthorName.trim()) {
+            try {
+                const authorRes = await fetch("/api/author/create", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        name: newAuthorName.trim(),
+                        originalLanguage: newAuthorLang.trim() || undefined,
+                    }),
+                });
+                if (authorRes.ok) {
+                    const newAuthor = await authorRes.json();
+                    authorId = newAuthor.id;
+                }
+            } catch {
+                // Continue without author if creation fails
+            }
+        }
+
+
         const data = {
             id,
             title: formData.get("title") as string,
@@ -51,10 +90,11 @@ export default function EditNovelPage({ params }: PageProps) {
             tags: formData.get("tags") as string,
             coverUrl: coverUrl || undefined,
             status: formData.get("status") as string,
-            updateSchedule: formData.get("updateSchedule") as string || undefined,
+            updateSchedule: (formData.get("updateSchedule") as string) || undefined,
             totalChapters: formData.get("totalChapters")
                 ? parseInt(formData.get("totalChapters") as string)
                 : undefined,
+            authorId,
         };
 
         try {
@@ -65,7 +105,7 @@ export default function EditNovelPage({ params }: PageProps) {
             });
 
             if (!res.ok) {
-                throw new Error("Failed to update novel");
+                throw new Error("Gagal menyimpan perubahan");
             }
 
             router.push(`/novel/${id}`);
@@ -80,7 +120,7 @@ export default function EditNovelPage({ params }: PageProps) {
             <div className="min-h-screen bg-bg flex items-center justify-center">
                 <div className="text-center">
                     <div className="text-6xl mb-4">📚</div>
-                    <p className="text-muted">Loading novel...</p>
+                    <p className="text-muted">Memuat novel...</p>
                 </div>
             </div>
         );
@@ -91,7 +131,7 @@ export default function EditNovelPage({ params }: PageProps) {
             <div className="min-h-screen bg-bg flex items-center justify-center">
                 <div className="text-center">
                     <div className="text-6xl mb-4">❌</div>
-                    <p className="text-muted">{error || "Novel not found"}</p>
+                    <p className="text-muted">{error || "Novel tidak ditemukan"}</p>
                 </div>
             </div>
         );
@@ -104,12 +144,12 @@ export default function EditNovelPage({ params }: PageProps) {
                     {/* Header */}
                     <div className="mb-8">
                         <Link href={`/novel/${id}`} className="text-accent hover:underline text-sm mb-4 inline-block">
-                            ← Back to Novel
+                            ← Kembali ke Novel
                         </Link>
                         <h1 className="text-4xl font-bold text-fg">
                             Edit Novel
                         </h1>
-                        <p className="text-muted mt-2">Update your novel details</p>
+                        <p className="text-muted mt-2">Perbarui detail novel terjemahan kamu</p>
                     </div>
 
                     {/* Form */}
@@ -122,21 +162,82 @@ export default function EditNovelPage({ params }: PageProps) {
 
                         {/* Title */}
                         <Input
-                            label="Novel Title"
+                            label="Judul Novel"
                             name="title"
                             required
                             defaultValue={novel.title}
-                            placeholder="Enter your novel's title"
+                            placeholder="Masukkan judul novel"
                         />
+
+                        {/* Author (Original) */}
+                        <div>
+                            <label className="block text-sm font-medium text-fg mb-2">
+                                Penulis Asli (Opsional)
+                            </label>
+
+                            {!showNewAuthor ? (
+                                <div className="space-y-2">
+                                    <select
+                                        value={selectedAuthorId}
+                                        onChange={(e) => setSelectedAuthorId(e.target.value)}
+                                        className="w-full px-4 py-2 border border-border rounded-lg bg-bg text-fg focus:ring-2 focus:ring-accent/30 focus:border-accent transition-[border-color,box-shadow]"
+                                    >
+                                        <option value="">— Pilih penulis asli —</option>
+                                        {authors.map((author) => (
+                                            <option key={author.id} value={author.id}>
+                                                {author.name} {author.originalLanguage ? `(${author.originalLanguage})` : ""}
+                                            </option>
+                                        ))}
+                                    </select>
+                                    <button
+                                        type="button"
+                                        onClick={() => {
+                                            setShowNewAuthor(true);
+                                            setSelectedAuthorId("");
+                                        }}
+                                        className="text-sm text-accent hover:underline"
+                                    >
+                                        + Tambah penulis baru
+                                    </button>
+                                </div>
+                            ) : (
+                                <div className="space-y-3 p-4 border border-border rounded-lg bg-muted/5">
+                                    <Input
+                                        label="Nama Penulis"
+                                        value={newAuthorName}
+                                        onChange={(e: React.ChangeEvent<HTMLInputElement>) => setNewAuthorName(e.target.value)}
+                                        placeholder="Contoh: Tian Can Tu Dou"
+                                    />
+                                    <Input
+                                        label="Bahasa Asli (Opsional)"
+                                        value={newAuthorLang}
+                                        onChange={(e: React.ChangeEvent<HTMLInputElement>) => setNewAuthorLang(e.target.value)}
+                                        placeholder="Contoh: Chinese, Korean, Japanese"
+                                    />
+                                    <button
+                                        type="button"
+                                        onClick={() => {
+                                            setShowNewAuthor(false);
+                                            setNewAuthorName("");
+                                            setNewAuthorLang("");
+                                        }}
+                                        className="text-sm text-muted hover:text-fg"
+                                    >
+                                        ← Pilih dari daftar
+                                    </button>
+                                </div>
+                            )}
+                            <p className="text-xs text-muted mt-1">Penulis asli dari novel original</p>
+                        </div>
 
                         {/* Description */}
                         <Textarea
-                            label="Description"
+                            label="Sinopsis"
                             name="description"
                             required
                             rows={6}
                             defaultValue={novel.description}
-                            placeholder="Write a compelling synopsis..."
+                            placeholder="Tulis sinopsis novel..."
                         />
 
                         {/* Cover Upload */}
@@ -147,59 +248,59 @@ export default function EditNovelPage({ params }: PageProps) {
 
                         {/* Genres */}
                         <Input
-                            label="Genres"
+                            label="Genre"
                             name="genres"
                             required
                             defaultValue={novel.genres}
                             placeholder="Fantasy, Romance, Action"
-                            helperText="Separate multiple genres with commas"
+                            helperText="Pisahkan genre dengan koma"
                         />
 
                         {/* Tags */}
                         <Input
-                            label="Tags (Optional)"
+                            label="Tag (Opsional)"
                             name="tags"
                             defaultValue={novel.tags}
-                            placeholder="magic, adventure, dragons"
-                            helperText="Separate tags with commas"
+                            placeholder="cultivation, reinkarnasi, op-mc"
+                            helperText="Pisahkan tag dengan koma"
                         />
 
                         {/* Novel Status */}
                         <div>
                             <label className="block text-sm font-medium text-fg mb-2">
-                                Publication Status *
+                                Status Terjemahan *
                             </label>
                             <select
                                 name="status"
                                 defaultValue={novel.status || "ONGOING"}
-                                className="w-full px-4 py-2 border border-border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                className="w-full px-4 py-2 border border-border rounded-lg bg-bg text-fg focus:ring-2 focus:ring-accent/30 focus:border-accent transition-[border-color,box-shadow]"
                             >
                                 <option value="ONGOING">📖 Ongoing</option>
                                 <option value="COMPLETED">✅ Completed</option>
                                 <option value="HIATUS">⏸️ Hiatus</option>
                                 <option value="DROPPED">❌ Dropped</option>
                             </select>
-                            <p className="text-xs text-muted mt-1">Current status of your novel</p>
+                            <p className="text-xs text-muted mt-1">Status terjemahan saat ini</p>
                         </div>
 
                         {/* Update Schedule */}
                         <Input
-                            label="Update Schedule (Optional)"
+                            label="Jadwal Update (Opsional)"
                             name="updateSchedule"
                             defaultValue={novel.updateSchedule || ""}
-                            placeholder="e.g., Weekly updates every Monday"
-                            helperText="Let readers know when to expect new chapters"
+                            placeholder="Contoh: Setiap Senin dan Kamis"
+                            helperText="Beritahu pembaca kapan chapter baru akan terbit"
                         />
 
                         {/* Total Chapters */}
                         <Input
-                            label="Planned Total Chapters (Optional)"
+                            label="Total Chapter (Opsional)"
                             name="totalChapters"
                             type="number"
                             min="1"
                             defaultValue={novel.totalChapters || ""}
-                            placeholder="e.g., 100"
-                            helperText="Approximately how many chapters do you plan?"
+                            placeholder="Contoh: 100"
+                            helperText="Jumlah total chapter dari novel asli"
                         />
 
                         {/* Actions */}
@@ -210,11 +311,11 @@ export default function EditNovelPage({ params }: PageProps) {
                                 disabled={submitting}
                                 className="flex-1"
                             >
-                                {submitting ? "Saving..." : "Save Changes"}
+                                {submitting ? "Menyimpan..." : "Simpan Perubahan"}
                             </Button>
                             <Link href={`/novel/${id}`} className="flex-1">
                                 <Button type="button" variant="outline" className="w-full">
-                                    Cancel
+                                    Batal
                                 </Button>
                             </Link>
                         </div>

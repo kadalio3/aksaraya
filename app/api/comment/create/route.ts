@@ -131,20 +131,20 @@ export async function POST(req: NextRequest) {
         // Send notification to novel author when someone comments on their chapter
         const novel = await prisma.novel.findUnique({
             where: { id: chapter.novelId },
-            select: { authorId: true, title: true },
+            select: { translatorId: true, title: true },
         });
 
-        if (novel && !notifiedUserIds.has(novel.authorId)) {
+        if (novel && !notifiedUserIds.has(novel.translatorId)) {
             await prisma.notification.create({
                 data: {
-                    userId: novel.authorId,
+                    userId: novel.translatorId,
                     type: "COMMENT_REPLY",
                     title: "Komentar baru di novelmu",
                     message: `${commenterName} mengomentari chapter "${chapter.title}" di novel "${novel.title}".`,
                     link: chapterLink,
                 },
             });
-            notifiedUserIds.add(novel.authorId);
+            notifiedUserIds.add(novel.translatorId);
         }
 
         return NextResponse.json(comment, { status: 201 });

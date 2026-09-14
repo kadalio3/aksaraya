@@ -21,14 +21,14 @@ export async function POST(req: NextRequest) {
         // Check if novel exists and user is the owner
         const novel = await prisma.novel.findUnique({
             where: { id: validatedData.novelId },
-            select: { id: true, authorId: true, title: true },
+            select: { id: true, translatorId: true, title: true },
         });
 
         if (!novel) {
             return NextResponse.json({ message: "Novel not found" }, { status: 404 });
         }
 
-        if (novel.authorId !== session.user.id && session.user.role !== "ADMIN") {
+        if (novel.translatorId !== session.user.id && session.user.role !== "ADMIN") {
             return NextResponse.json(
                 { message: "You don't have permission to add chapters to this novel" },
                 { status: 403 }
@@ -69,7 +69,7 @@ export async function POST(req: NextRequest) {
                     select: { userId: true },
                 }),
                 prisma.follow.findMany({
-                    where: { followingId: novel.authorId },
+                    where: { followingId: novel.translatorId },
                     select: { followerId: true },
                 }),
             ]);
@@ -80,7 +80,7 @@ export async function POST(req: NextRequest) {
                     ...favoriters.map((f) => f.userId),
                     ...followers.map((f) => f.followerId),
                 ]),
-            ].filter((uid) => uid !== novel.authorId);
+            ].filter((uid) => uid !== novel.translatorId);
 
             if (notifyUserIds.length > 0) {
                 await prisma.notification.createMany({

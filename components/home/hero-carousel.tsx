@@ -15,6 +15,9 @@ interface FeaturedNovel {
     author: {
         name: string | null;
     };
+    translator?: {
+        name: string | null;
+    };
 }
 
 interface HeroCarouselProps {

@@ -29,7 +29,7 @@ export async function DELETE(req: NextRequest) {
 
         // Check ownership
         if (
-            existingChapter.novel.authorId !== session.user.id &&
+            existingChapter.novel.translatorId !== session.user.id &&
             session.user.role !== "ADMIN"
         ) {
             return NextResponse.json(

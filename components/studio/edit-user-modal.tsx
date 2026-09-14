@@ -124,7 +124,7 @@ export function EditUserModal({ isOpen, onClose, onSuccess, user }: EditUserModa
                                 className="w-full px-3 py-2 border border-border rounded-lg focus:border-accent focus:outline-none"
                             >
                                 <option value="USER">User</option>
-                                <option value="AUTHOR">Author</option>
+                                <option value="TRANSLATOR">Translator</option>
                                 <option value="ADMIN">Admin</option>
                             </select>
                         </div>

@@ -86,13 +86,23 @@
 
 @layer utilities {
   .reading-content {
-    max-width: 42rem;
+    max-width: 48rem;
     margin: 0 auto;
-    line-height: 1.8;
+    line-height: 1.85;
     font-size: 1.125rem;
   }
   .reading-content p {
     margin-bottom: 1.5rem;
+  }
+
+  @media (max-width: 640px) {
+    .reading-content {
+      line-height: 1.75;
+      font-size: 1rem;
+    }
+    .reading-content p {
+      margin-bottom: 1.25rem;
+    }
   }
 }
 

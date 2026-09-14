@@ -124,7 +124,7 @@ export const UserMenu: React.FC<UserMenuProps> = ({ user, studioUrl }) => {
                             Dashboard
                         </Link>
 
-                        {(user.role === "AUTHOR" || user.role === "ADMIN") && (
+                        {(user.role === "TRANSLATOR" || user.role === "ADMIN") && (
                             <Link
                                 href="/dashboard/author"
                                 onClick={() => setIsOpen(false)}

@@ -35,7 +35,7 @@ export const Navbar: React.FC<NavbarProps> = ({ user, studioUrl, siteName = "Nov
         { href: "/", label: "Beranda", show: true },
         { href: "/novel", label: "Jelajahi", show: true },
         { href: "/dashboard", label: "Dashboard", show: !!user },
-        { href: "/dashboard/author", label: "Novel Saya", show: user?.role === "AUTHOR" || user?.role === "ADMIN" },
+        { href: "/dashboard/author", label: "Novel Saya", show: user?.role === "TRANSLATOR" || user?.role === "ADMIN" },
         { href: studioUrl || "", label: "Studio", show: user?.role === "ADMIN" && !!studioUrl },
     ];
 

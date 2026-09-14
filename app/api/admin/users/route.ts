@@ -7,7 +7,7 @@ const updateUserSchema = z.object({
     id: z.string(),
     name: z.string().min(2).optional(),
     email: z.string().email().optional(),
-    role: z.enum(["USER", "AUTHOR", "ADMIN"]).optional(),
+    role: z.enum(["USER", "TRANSLATOR", "ADMIN"]).optional(),
 });
 
 export async function PUT(req: NextRequest) {

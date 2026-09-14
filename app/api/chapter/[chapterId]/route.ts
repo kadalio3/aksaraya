@@ -20,7 +20,7 @@ export async function GET(
                 novel: {
                     select: {
                         id: true,
-                        authorId: true,
+                        translatorId: true,
                     },
                 },
             },
@@ -30,8 +30,8 @@ export async function GET(
             return NextResponse.json({ error: "Chapter not found" }, { status: 404 });
         }
 
-        // Check if user is the author or admin
-        if (chapter.novel.authorId !== session.user.id && session.user.role !== "ADMIN") {
+        // Check if user is the translator or admin
+        if (chapter.novel.translatorId !== session.user.id && session.user.role !== "ADMIN") {
             return NextResponse.json({ error: "Forbidden" }, { status: 403 });
         }
 

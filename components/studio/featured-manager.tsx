@@ -10,7 +10,7 @@ interface Novel {
     title: string;
     coverUrl: string | null;
     featured: boolean;
-    author: { name: string | null };
+    translator: { name: string | null };
     _count: { chapters: number; favorites: number };
 }
 
@@ -47,7 +47,7 @@ export function FeaturedManager({ studioToken }: FeaturedManagerProps) {
 
     const filtered = novels.filter((n) =>
         n.title.toLowerCase().includes(search.toLowerCase()) ||
-        n.author.name?.toLowerCase().includes(search.toLowerCase())
+        n.translator.name?.toLowerCase().includes(search.toLowerCase())
     );
 
     const featuredCount = novels.filter((n) => n.featured).length;
@@ -102,7 +102,7 @@ export function FeaturedManager({ studioToken }: FeaturedManagerProps) {
                         <div className="flex-1 min-w-0">
                             <h4 className="text-sm font-semibold text-fg truncate">{novel.title}</h4>
                             <p className="text-xs text-muted">
-                                {novel.author.name || "Unknown"} · {novel._count.chapters} ch · {novel._count.favorites} fav
+                                {novel.translator.name || "Unknown"} · {novel._count.chapters} ch · {novel._count.favorites} fav
                             </p>
                         </div>
 

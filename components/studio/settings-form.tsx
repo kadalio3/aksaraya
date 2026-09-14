@@ -148,7 +148,7 @@ export function SettingsForm({ initialSettings, studioToken }: SettingsFormProps
                             className="input-field"
                         >
                             <option value="USER">USER</option>
-                            <option value="AUTHOR">AUTHOR</option>
+                            <option value="TRANSLATOR">TRANSLATOR</option>
                         </select>
                     </Field>
                 </div>

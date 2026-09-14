@@ -14,10 +14,10 @@ export async function POST(req: NextRequest) {
             );
         }
 
-        // Check if user is AUTHOR or ADMIN
-        if (session.user.role !== "AUTHOR" && session.user.role !== "ADMIN") {
+        // Check if user is TRANSLATOR or ADMIN
+        if (session.user.role !== "TRANSLATOR" && session.user.role !== "ADMIN") {
             return NextResponse.json(
-                { error: "Only authors can create novels" },
+                { error: "Only translators can create novels" },
                 { status: 403 }
             );
         }
@@ -33,16 +33,18 @@ export async function POST(req: NextRequest) {
                 coverUrl: validatedData.coverUrl || null,
                 genres: validatedData.genres,
                 tags: validatedData.tags || "",
-                authorId: session.user.id,
+                translatorId: session.user.id,
+                authorId: validatedData.authorId || null,
             },
             include: {
-                author: {
+                translator: {
                     select: {
                         id: true,
                         name: true,
                         email: true,
                     },
                 },
+                author: true,
             },
         });
 

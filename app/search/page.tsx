@@ -28,7 +28,8 @@ export default async function SearchPage({
         id: true, title: true, description: true, genres: true, coverUrl: true,
         status: true, updateSchedule: true, totalChapters: true,
         averageRating: true, totalRatings: true,
-        author: { select: { id: true, name: true, email: true } },
+        author: { select: { id: true, name: true } },
+        translator: { select: { id: true, name: true, email: true } },
         _count: { select: { chapters: true } },
     } as const;
 
@@ -51,7 +52,7 @@ export default async function SearchPage({
         query
             ? prisma.user.findMany({
                 where: {
-                    role: { in: ["AUTHOR", "ADMIN"] },
+                    role: { in: ["TRANSLATOR", "ADMIN"] },
                     OR: [
                         { name: { contains: query } },
                         { email: { contains: query } },
@@ -85,7 +86,7 @@ export default async function SearchPage({
                                 type="text"
                                 name="q"
                                 defaultValue={query}
-                                placeholder="Cari novel, penulis, genre, tag..."
+                                placeholder="Cari novel, penerjemah, genre, tag..."
                                 autoFocus
                                 className="w-full pl-12 pr-4 py-4 rounded-xl border border-border bg-surface text-fg text-base focus:border-accent focus:outline-none transition-[border-color] duration-300 shadow-sm"
                             />
@@ -104,8 +105,8 @@ export default async function SearchPage({
                 {!query ? (
                     <div className="text-center py-20">
                         <Search size={48} className="mx-auto text-muted/30 mb-4" />
-                        <p className="text-muted text-lg font-medium">Cari novel atau penulis favorit kamu</p>
-                        <p className="text-muted text-sm mt-1">Ketik judul, nama penulis, genre, atau tag</p>
+                        <p className="text-muted text-lg font-medium">Cari novel atau penerjemah favorit kamu</p>
+                        <p className="text-muted text-sm mt-1">Ketik judul, nama penerjemah, genre, atau tag</p>
                     </div>
                 ) : totalResults === 0 ? (
                     <div className="text-center py-20">
@@ -121,7 +122,7 @@ export default async function SearchPage({
                                 <div className="flex items-center gap-2 mb-4">
                                     <User size={16} className="text-muted" />
                                     <h2 className="text-sm font-semibold text-fg uppercase tracking-wide">
-                                        Penulis ({authors.length})
+                                        Penerjemah ({authors.length})
                                     </h2>
                                 </div>
                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">

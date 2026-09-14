@@ -31,7 +31,7 @@ export async function PUT(req: NextRequest) {
 
         // Check ownership (or admin)
         if (
-            existingNovel.authorId !== session.user.id &&
+            existingNovel.translatorId !== session.user.id &&
             session.user.role !== "ADMIN"
         ) {
             return NextResponse.json(
@@ -47,12 +47,13 @@ export async function PUT(req: NextRequest) {
         if (validatedData.coverUrl !== undefined) updateData.coverUrl = validatedData.coverUrl || null;
         if (validatedData.genres) updateData.genres = validatedData.genres;
         if (validatedData.tags) updateData.tags = validatedData.tags;
+        if (validatedData.authorId !== undefined) updateData.authorId = validatedData.authorId || null;
 
         const novel = await prisma.novel.update({
             where: { id: validatedData.id },
             data: updateData,
             include: {
-                author: {
+                translator: {
                     select: {
                         id: true,
                         name: true,

@@ -4,6 +4,7 @@ import type { Metadata } from "next";
 import { Space_Grotesk, DM_Sans } from "next/font/google";
 import "./globals.css";
 import { ToastProvider } from "@/components/ui/toast";
+import { PageTracker } from "@/components/analytics/page-tracker";
 import { getSettings } from "@/lib/settings";
 
 const spaceGrotesk = Space_Grotesk({
@@ -67,6 +68,7 @@ export default function RootLayout({
       </head>
       <body className={`${spaceGrotesk.variable} ${dmSans.variable} antialiased`} suppressHydrationWarning>
         <ToastProvider>
+          <PageTracker />
           {children}
         </ToastProvider>
       </body>

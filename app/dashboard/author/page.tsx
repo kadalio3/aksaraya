@@ -17,13 +17,13 @@ export default async function AuthorDashboardPage() {
         redirect("/login");
     }
 
-    if (session.user.role !== "AUTHOR" && session.user.role !== "ADMIN") {
+    if (session.user.role !== "TRANSLATOR" && session.user.role !== "ADMIN") {
         redirect("/dashboard");
     }
 
     // Get author's novels with chapter counts
     const novels = await prisma.novel.findMany({
-        where: { authorId: session.user.id },
+        where: { translatorId: session.user.id },
         include: {
             _count: {
                 select: {
@@ -42,7 +42,7 @@ export default async function AuthorDashboardPage() {
     const favoritesTrend = await prisma.favorite.findMany({
         where: {
             novel: {
-                authorId: session.user.id,
+                translatorId: session.user.id,
             },
             createdAt: {
                 gte: sixMonthsAgo,
@@ -70,7 +70,7 @@ export default async function AuthorDashboardPage() {
             <Navbar user={session.user} siteName={settings.site_name} />
             <Container className="py-8">
                 <div className="flex items-center justify-between mb-8">
-                    <h1 className="text-3xl font-bold">Author Dashboard</h1>
+                    <h1 className="text-3xl font-bold">Dashboard Penerjemah</h1>
                     <Link href="/novel/new">
                         <Button variant="primary">Create New Novel</Button>
                     </Link>

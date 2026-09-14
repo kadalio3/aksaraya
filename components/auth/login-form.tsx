@@ -36,7 +36,7 @@ export function LoginForm({ siteName }: LoginFormProps) {
             if (result?.error) {
                 setError("Email atau password salah");
             } else {
-                router.push("/dashboard");
+                router.push("/");
                 router.refresh();
             }
         } catch (err) {
